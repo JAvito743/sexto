@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reto Investigación Digital: crucigrama y sopa de letras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16213a;--ink2:#46506a;--mute:#7b8399;--line:#d9dde7;--bg:#f3f1ea;--card:#fff;
+  --navy:#1d2b53;--amber:#f2a516;--amber2:#ffe7b3;--green:#1f9d6b;--green2:#d7f3e6;
+  --red:#d6453d;--red2:#fde0dd;--blue:#2d6cdf;--blue2:#dce8ff;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Nunito,system-ui,sans-serif;color:var(--ink);background:var(--bg);
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.hidden{display:none!important}
+
+/* barra superior */
+.top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap}
+.brand{font-weight:900;font-size:16px;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--amber)}
+.who{font-size:13px;opacity:.85}
+.stats{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.pill{background:rgba(255,255,255,.12);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:800;display:flex;gap:6px;align-items:center;white-space:nowrap}
+.pill.warn{background:var(--amber);color:var(--ink)}
+.pill.bad{background:var(--red);color:#fff}
+
+/* tarjetas */
+.card{background:var(--card);border-radius:16px;box-shadow:0 1px 0 var(--line),0 6px 24px rgba(22,33,58,.06);padding:20px}
+h1{font-size:30px;line-height:1.1;margin:0 0 8px;font-weight:900}
+h2{font-size:21px;margin:0 0 10px;font-weight:900}
+h3{font-size:16px;margin:0 0 8px;font-weight:900}
+p{line-height:1.5;margin:0 0 10px}
+.kicker{font-size:12px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+
+/* inicio */
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;margin-top:18px}
+@media(max-width:820px){.hero{grid-template-columns:1fr}}
+.hero .intro{background:var(--navy);color:#fff}
+.hero .intro p{color:#dfe5f5}
+.rules{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:9px}
+.rules li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.4;color:#e8ecf7}
+.rules .ic{flex:none;width:26px;height:26px;border-radius:8px;background:rgba(242,165,22,.18);color:var(--amber);display:grid;place-items:center;font-weight:900;font-size:14px}
+label.f{display:block;font-weight:800;font-size:14px;margin:12px 0 5px}
+label.f small{font-weight:600;color:var(--mute)}
+.in{width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:10px;font-size:16px;-webkit-user-select:text;user-select:text;background:#fff;color:var(--ink)}
+.in:focus{outline:none;border-color:var(--blue)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:0;border-radius:10px;padding:12px 18px;font-weight:900;font-size:15px;background:var(--amber);color:var(--ink)}
+.btn:hover{filter:brightness(1.05)}
+.btn.sec{background:#eceef4;color:var(--ink)}
+.btn.blue{background:var(--blue);color:#fff}
+.btn.green{background:var(--green);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.err{color:var(--red);font-weight:800;font-size:14px;min-height:20px;margin-top:8px}
+.note{font-size:13px;color:var(--mute);margin-top:10px}
+
+/* pestañas */
+.tabs{display:flex;gap:8px;margin:16px 0 12px;flex-wrap:wrap}
+.tab{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 16px;font-weight:900;font-size:15px;color:var(--ink2);display:flex;gap:8px;align-items:center}
+.tab[aria-selected=true]{border-color:var(--navy);background:var(--navy);color:#fff}
+.tab .c{font-size:12px;background:var(--amber2);color:var(--ink);border-radius:999px;padding:2px 8px}
+.tab.finish{margin-left:auto;background:var(--green);border-color:var(--green);color:#fff}
+
+/* crucigrama */
+.cwlay{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media(max-width:900px){.cwlay{grid-template-columns:1fr}}
+.cluebox{background:var(--navy);color:#fff;border-radius:14px;padding:12px 14px;margin-bottom:12px;position:sticky;top:calc(var(--hdr,56px) + 6px);z-index:5}
+.cluebox .lab{font-size:12px;font-weight:900;color:var(--amber);letter-spacing:1px;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px}
+.cluebox canvas{display:block;width:100%;margin-top:6px}
+.gridwrap{overflow:auto;padding:4px}
+.cw{display:grid;gap:0;margin:0 auto;width:max-content}
+.cell{width:var(--cs);height:var(--cs);position:relative}
+.cell.w{background:#fff;outline:1.5px solid var(--ink);outline-offset:-0.75px}
+.cell.w.inw{background:var(--blue2)}
+.cell.w.cur{background:var(--amber2)}
+.cell.w.bad{background:var(--red2)}
+.cell.w.ok{background:var(--green2)}
+.cell .n{position:absolute;top:1px;left:2px;font-size:calc(var(--cs) * .3);font-weight:900;line-height:1;color:var(--ink2);pointer-events:none}
+.cell input{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;text-align:center;
+  font-family:var(--mono);font-weight:700;font-size:max(16px,calc(var(--cs) * .52));color:var(--ink);padding:0;padding-top:calc(var(--cs) * .08);
+  text-transform:uppercase;caret-color:transparent;border-radius:0;-webkit-user-select:none;user-select:none}
+.cell input:focus{outline:none}
+.side h3{display:flex;justify-content:space-between;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:9px;padding:5px 9px;font-weight:900;font-size:13px;color:var(--ink2);min-width:46px}
+.chip.full{border-color:var(--blue);color:var(--blue)}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.chip.good{background:var(--green2);border-color:var(--green);color:var(--green)}
+.meter{height:10px;background:#eceef4;border-radius:999px;overflow:hidden;margin:6px 0 4px}
+.meter i{display:block;height:100%;background:var(--green);width:0;transition:width .3s}
+.hintline{font-size:13px;color:var(--ink2);line-height:1.45}
+.feedback{font-weight:800;font-size:14px;min-height:22px;margin-top:8px}
+.feedback.ok{color:var(--green)}.feedback.bad{color:var(--red)}
+
+/* sopa */
+.splay{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:900px){.splay{grid-template-columns:1fr}}
+.spbox{position:relative;width:max-content;margin:0 auto;touch-action:none}
+.sp{display:grid;background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:4px}
+.sp div{width:var(--ss);height:var(--ss);display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:calc(var(--ss) * .55);color:var(--ink);border-radius:50%;position:relative;z-index:2}
+.sp div.sel{background:rgba(45,108,223,.25)}
+.sp div.start{background:var(--amber)}
+.spsvg{position:absolute;inset:0;pointer-events:none;z-index:1}
+.sclues{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.sclues li{border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:#fff;display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start}
+.sclues li .k{width:28px;height:28px;border-radius:8px;background:#eceef4;display:grid;place-items:center;font-weight:900;font-size:13px;color:var(--ink2)}
+.sclues li canvas{display:block;width:100%}
+.sclues li .ans:empty{display:none}
+.sclues li .ans{grid-column:2;font-family:var(--mono);font-weight:700;color:var(--green);font-size:14px;letter-spacing:1px}
+.sclues li.done{border-color:var(--green);background:#f4fbf8}
+.sclues li.done .k{background:var(--green);color:#fff}
+
+/* capa de ausencia */
+body.away .app-main{filter:blur(14px) grayscale(1);pointer-events:none}
+.modal{position:fixed;inset:0;background:rgba(15,22,40,.72);display:grid;place-items:center;z-index:100;padding:16px}
+.modal .card{max-width:460px;width:100%;text-align:center}
+.modal .big{font-size:46px;font-weight:900;color:var(--red);line-height:1}
+
+/* entrega */
+.sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.sum{border:2px solid var(--line);border-radius:12px;padding:10px 12px}
+.sum b{display:block;font-size:24px;font-weight:900}
+.sum span{font-size:12.5px;color:var(--mute);font-weight:800;text-transform:uppercase;letter-spacing:.6px}
+.codebox{font-family:var(--mono);font-size:13px;word-break:break-all;background:#0f1628;color:#ffd77a;border-radius:10px;padding:12px;-webkit-user-select:all;user-select:all;line-height:1.5}
+.integ{border-radius:12px;padding:10px 12px;font-weight:800;margin-top:10px}
+.integ.g{background:var(--green2);color:#0d6b47}.integ.y{background:var(--amber2);color:#7a5200}.integ.r{background:var(--red2);color:#8f231d}
+
+/* docente */
+table.t{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:10px}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}
+table.t th{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--mute)}
+.tag{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:900}
+.tag.g{background:var(--green2);color:#0d6b47}.tag.y{background:var(--amber2);color:#7a5200}.tag.r{background:var(--red2);color:#8f231d}
+textarea.in{min-height:120px;font-family:var(--mono);font-size:13px}
+.doc-sol .cw{--cs:26px}
+.solwords{columns:2;font-size:14px;line-height:1.6}
+@media(max-width:600px){.tab{padding:8px 11px;font-size:14px}.tab.finish{margin-left:0;flex:1 1 100%;justify-content:center}.tabs .tab[data-t]{flex:1;justify-content:center}h1{font-size:25px}}
+@media print{body{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span>Reto Investigación Digital</div>
+    <div class="who" id="who"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<main class="wrap app-main" id="app"></main>
+<div id="modal"></div>
+
+<script>
+(function(){
+"use strict";
+/* ============ utilidades ============ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function hash(s){let h=2166136261>>>0;for(const ch of String(s)){h^=ch.codePointAt(0);h=Math.imul(h,16777619)>>>0}return h>>>0}
+function rng(seed){let a=seed>>>0;return function(){a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),1|t);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296}}
+function shuffle(arr,r){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/\s+/g," ").trim();
+const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const fmtT=s=>{s=Math.max(0,Math.round(s));const m=Math.floor(s/60),x=s%60;return m+":"+String(x).padStart(2,"0")};
+const SECRET="invdig6-cs-7f3a";
+const PIN_HASH=2648106281;
+
+/* ============ banco de palabras ============
+   T = solo se responde con el taller (imágenes y ejemplos de la página)
+   G = conceptos generales del taller */
+const TALLER=[
+ ["GOMEZ","Apellido de la autora del artículo del museo que revisaste con lupa en el tema 4."],
+ ["MUSEO","Tipo de institución que publicó el artículo sobre la evolución de los computadores en el tema 4."],
+ ["MARZO","Mes en que se publicó el artículo que revisaste con lupa en el tema 4."],
+ ["FELISIDADES","Palabra mal escrita en el mensaje tramposo del tema 5. Escríbela con el mismo error."],
+ ["TABLET","Premio «nuevo y gratis» que prometía el mensaje falso del tema 5."],
+ ["PREMIOSMEGA","Nombre del remitente del mensaje tramposo del tema 5, todo junto."],
+ ["DIEZ","Minutos que daba el mensaje falso del tema 5 para reclamar el premio (en letras)."],
+ ["VIDEOJUEGO","Palabra que se excluía con el signo menos en la imagen de operadores del tema 3."],
+ ["JAGUAR","Animal del ejemplo del signo menos que no debía confundirse con un carro (tema 3)."],
+ ["TORTUGAS","Animales que se buscaban en el ejemplo del operador site: (tema 3)."],
+ ["ANTEOJOS","En el ejemplo de las comillas del tema 3 se buscaba al oso de…"],
+ ["AGUA","En la imagen del buscador del tema 1 se investigaba la importancia del…"],
+ ["RIOS","En la imagen del navegador del tema 2, la segunda pestaña abierta decía «Los…»."],
+ ["PORTATIL","Pieza del rompecabezas de la evolución marcada con el año 2000 (tema 8)."],
+ ["CELULAR","Pieza del rompecabezas de la evolución marcada con el año 2007 (tema 8)."],
+ ["CARGADOR","Objeto del escritorio del tema 9 que gasta energía aunque no esté cargando nada."],
+ ["LAMPARA","Objeto del escritorio del tema 9 que ahorra energía con bombillas LED."],
+ ["SEMAFORO","Herramienta de tres colores que usaste en el tema 6 para clasificar conductas."]
+].map(([w,c])=>({w,q:c,t:1}));
+const GENERAL=[
+ ["NAVEGADOR","Programa que abre y muestra páginas web; Firefox, Edge y Safari son ejemplos."],
+ ["BUSCADOR","Bing, DuckDuckGo y Ecosia lo son; no confundirlo con el programa que abre la ventana."],
+ ["MARCADORES","También se llaman favoritos: guardan una página para volver a ella otro día."],
+ ["RECARGAR","Lo haces cuando una página se quedó a medias o quieres verla actualizada."],
+ ["COMILLAS","Operador que obliga al buscador a respetar una frase exacta y su orden."],
+ ["CONTRASEÑA","Debe ser larga, mezclar símbolos y ser distinta en cada cuenta; nunca se envía por mensaje."],
+ ["SUPLANTACION","Cuando alguien se hace pasar por otra persona en Internet (… de identidad)."],
+ ["PRIVACIDAD","Configuración que decide quién puede ver tus fotos antes de publicarlas."],
+ ["REMITENTE","Si es desconocido, quien envía el mensaje ya es la primera señal de engaño."],
+ ["ALGORITMO","Instrucciones y cálculos que usa una IA para encontrar patrones."],
+ ["SESGO","Prejuicio que una IA aprende cuando sus ejemplos de entrenamiento tienen errores."],
+ ["CHATBOT","Programa de IA que conversa contigo por escrito."],
+ ["VERIFICAR","Lo que siempre debes hacer con una respuesta de IA, comparándola con una fuente confiable."],
+ ["ENIAC","Computador de 1946 que funcionaba con válvulas y ocupaba un salón entero."],
+ ["TRANSISTOR","En la década de 1950 reemplazó a las válvulas e hizo los equipos más pequeños."],
+ ["ESCANER","Dispositivo de entrada que convierte un papel impreso en imagen digital."],
+ ["IMPRESORA","Dispositivo de salida; para cuidar el ambiente úsala por las dos caras del papel."],
+ ["PILAS","Contienen sustancias tóxicas: nunca van a la basura común."],
+ ["AUTOR","Si nadie firma el texto, falta este dato y la fuente es menos confiable."],
+ ["CIBERACOSO","Molestar, amenazar o burlarse de alguien de forma repetida por Internet."],
+ ["FAVORITOS","Otro nombre de los marcadores del navegador."],
+ ["OPERADOR","Truco como «site:» o el signo menos que hace más precisa una búsqueda."],
+ ["ENLACE","Si es raro o acortado, puede llevarte a una página falsa."],
+ ["CONFIABLE","Así es una fuente con autor, fecha y referencias."],
+ ["REFERENCIAS","Fuentes citadas que te dejan comprobar los datos de una página."],
+ ["ANUNCIO","Ventana llamativa que promete dinero: ¡no hagas clic!"],
+ ["URGENCIA","«Solo tienes unos minutos»: señal de engaño que te mete prisa."],
+ ["WIFI","Red pública a la que conectarse requiere precaución."],
+ ["SESION","Ciérrala siempre en computadores compartidos."],
+ ["PATRONES","Lo que busca un algoritmo dentro de los datos."],
+ ["EJEMPLOS","Una IA se entrena con millones de ellos."],
+ ["VALVULAS","Componentes del ENIAC que luego reemplazó el transistor."],
+ ["PROYECTOR","Dispositivo de salida que agranda la imagen en la pared."],
+ ["MICROFONO","Dispositivo de entrada que capta tu voz."],
+ ["PARLANTES","Dispositivo de salida que reproduce sonido."],
+ ["RECICLAR","Lo que se hace con los cartuchos vacíos de la impresora."],
+ ["RECOLECCION","Tipo de punto adonde se lleva un celular dañado o las pilas usadas."],
+ ["TOXICOS","Así son los metales que contaminan el agua y el suelo."],
+ ["REUTILIZAR","Donar un equipo que todavía funciona."],
+ ["BRILLO","Bajarlo en el monitor ahorra energía y batería."]
+].map(([w,c])=>({w,q:c,t:0}));
+
+/* ============ generador del crucigrama ============ */
+function buildCross(items,maxSize,seed){
+  const r=rng(seed);let best=null;
+  for(let t=0;t<260;t++){
+    let ws=shuffle(items,r);
+    ws.sort((a,b)=>(b.w.length+r()*4)-(a.w.length+r()*4));
+    const grid=new Map(),placed=[];
+    const K=(a,b)=>a+","+b;
+    let minR=0,maxR=0,minC=0,maxC=0;
+    const can=(w,r0,c0,d)=>{
+      const dr=d==="h"?0:1,dc=d==="h"?1:0;
+      if(grid.has(K(r0-dr,c0-dc))||grid.has(K(r0+dr*w.length,c0+dc*w.length)))return -1;
+      let inter=0;
+      for(let i=0;i<w.length;i++){
+        const rr=r0+dr*i,cc=c0+dc*i,g=grid.get(K(rr,cc));
+        if(g){if(g.ch!==w[i]||g.d.includes(d))return -1;inter++}
+        else{
+          if(d==="h"){if(grid.has(K(rr-1,cc))||grid.has(K(rr+1,cc)))return -1}
+          else{if(grid.has(K(rr,cc-1))||grid.has(K(rr,cc+1)))return -1}
+        }
+      }
+      return inter;
+    };
+    const put=(it,r0,c0,d)=>{
+      const dr=d==="h"?0:1,dc=d==="h"?1:0;
+      for(let i=0;i<it.w.length;i++){const k=K(r0+dr*i,c0+dc*i),g=grid.get(k);if(g)g.d+=d;else grid.set(k,{ch:it.w[i],d})}
+      placed.push({...it,r:r0,c:c0,d});
+      minR=Math.min(minR,r0);minC=Math.min(minC,c0);maxR=Math.max(maxR,r0+dr*(it.w.length-1));maxC=Math.max(maxC,c0+dc*(it.w.length-1));
+    };
+    put(ws[0],0,0,r()<.5?"h":"v");
+    let rest=ws.slice(1);
+    for(let pass=0;pass<3&&rest.length;pass++){
+      const left=[];
+      for(const it of rest){
+        const w=it.w;let cand=null;
+        for(const [key,g] of grid){
+          const [gr,gc]=key.split(",").map(Number);
+          for(let i=0;i<w.length;i++){
+            if(w[i]!==g.ch)continue;
+            for(const d of ["h","v"]){
+              const r0=d==="h"?gr:gr-i,c0=d==="h"?gc-i:gc;
+              const k=can(w,r0,c0,d);if(k<=0)continue;
+              const er=d==="h"?r0:r0+w.length-1,ec=d==="h"?c0+w.length-1:c0;
+              const a=Math.min(minR,r0),b=Math.max(maxR,er),c=Math.min(minC,c0),e=Math.max(maxC,ec);
+              if(b-a+1>maxSize||e-c+1>maxSize)continue;
+              const sc=k*10-((b-a+1)*(e-c+1))/30+r()*2;
+              if(!cand||sc>cand.sc)cand={sc,r0,c0,d};
+            }
+          }
+        }
+        if(cand)put(it,cand.r0,cand.c0,cand.d);else left.push(it);
+      }
+      rest=left;
+    }
+    let inter=0;for(const g of grid.values())if(g.d.length===2)inter++;
+    const tal=placed.filter(p=>p.t).length;
+    const score=placed.length*100+tal*25+inter*6-((maxR-minR+1)*(maxC-minC+1))/12;
+    if(!best||score>best.score)best={score,placed:placed.map(p=>({...p,r:p.r-minR,c:p.c-minC})),R:maxR-minR+1,C:maxC-minC+1};
+  }
+  // numeración
+  const starts=[...new Set(best.placed.map(p=>p.r*100+p.c))].sort((a,b)=>a-b);
+  best.placed.forEach(p=>p.n=starts.indexOf(p.r*100+p.c)+1);
+  best.placed.sort((a,b)=>a.n-b.n||(a.d==="h"?-1:1));
+  const cells={};
+  best.placed.forEach((p,pi)=>{for(let i=0;i<p.w.length;i++){const rr=p.d==="h"?p.r:p.r+i,cc=p.d==="h"?p.c+i:p.c,k=rr+","+cc;cells[k]=cells[k]||{ch:p.w[i],words:[]};cells[k].words.push(pi)}});
+  best.cells=cells;
+  return best;
+}
+
+/* ============ generador de la sopa ============ */
+const DIRS=[[0,1],[1,0],[1,1],[-1,1],[0,-1],[-1,0],[-1,-1],[1,-1]];
+function buildSopa(items,N,seed){
+  const r=rng(seed);
+  const words=items.map(i=>i.w);
+  for(let att=0;att<300;att++){
+    const g=Array.from({length:N},()=>Array(N).fill(null)),pos={};let ok=true;
+    const plan=shuffle(Array.from({length:words.length},(_,i)=>DIRS[i%8]),r);
+    const order=words.slice().sort((a,b)=>b.length-a.length);
+    order.forEach((w,wi)=>{
+      if(!ok)return;let done=false;
+      for(let t=0;t<3000&&!done;t++){
+        const d=t<2000?plan[wi]:DIRS[Math.floor(r()*8)];
+        const r0=Math.floor(r()*N),c0=Math.floor(r()*N),er=r0+d[0]*(w.length-1),ec=c0+d[1]*(w.length-1);
+        if(er<0||er>=N||ec<0||ec>=N)continue;
+        let bad=false,over=0;
+        for(let i=0;i<w.length;i++){const x=g[r0+d[0]*i][c0+d[1]*i];if(x===null)continue;if(x!==w[i]){bad=true;break}over++}
+        if(bad||over>2)continue;
+        for(let i=0;i<w.length;i++)g[r0+d[0]*i][c0+d[1]*i]=w[i];
+        pos[w]={r:r0,c:c0,dr:d[0],dc:d[1]};done=true;
+      }
+      if(!done)ok=false;
+    });
+    if(!ok)continue;
+    // señuelos: pedazos de palabras incompletos
+    const frags=shuffle(words.filter(w=>w.length>=6).flatMap(w=>[w.slice(0,w.length-2),w.slice(0,4)]),r).slice(0,26);
+    for(const f of frags){
+      for(let t=0;t<150;t++){
+        const d=DIRS[Math.floor(r()*8)],r0=Math.floor(r()*N),c0=Math.floor(r()*N),er=r0+d[0]*(f.length-1),ec=c0+d[1]*(f.length-1);
+        if(er<0||er>=N||ec<0||ec>=N)continue;
+        let fit=true;for(let i=0;i<f.length;i++){const x=g[r0+d[0]*i][c0+d[1]*i];if(x!==null&&x!==f[i]){fit=false;break}}
+        if(!fit)continue;
+        for(let i=0;i<f.length;i++)g[r0+d[0]*i][c0+d[1]*i]=f[i];break;
+      }
+    }
+    const letters=words.join("");
+    for(let i=0;i<N;i++)for(let j=0;j<N;j++)if(g[i][j]===null)g[i][j]=letters[Math.floor(r()*letters.length)];
+    const count=w=>{let k=0;for(let i=0;i<N;i++)for(let j=0;j<N;j++)for(const d of DIRS){const er=i+d[0]*(w.length-1),ec=j+d[1]*(w.length-1);if(er<0||er>=N||ec<0||ec>=N)continue;let m=true;for(let x=0;x<w.length;x++)if(g[i+d[0]*x][j+d[1]*x]!==w[x]){m=false;break}if(m)k++}return k};
+    if(words.every(w=>count(w)===1))return {grid:g,pos,N};
+  }
+  return null;
+}
+
+/* ============ reto personal (semilla = estudiante) ============ */
+function makeChallenge(name,curso,clave){
+  const seed=hash(norm(name)+"|"+norm(curso)+"|"+norm(clave));
+  const r=rng(seed);
+  const tal=shuffle(TALLER,r),gen=shuffle(GENERAL,r);
+  let cw=null,used=new Set();
+  for(let k=0;k<6;k++){
+    const pick=[...tal.slice(0,9),...gen.slice(0,9)];
+    const b=buildCross(pick,15,seed+k*7919);
+    if(!cw||b.placed.length>cw.placed.length)cw=b;
+    if(b.placed.length>=15)break;
+  }
+  cw.placed.forEach(p=>used.add(p.w));
+  const stal=tal.filter(i=>!used.has(i.w)&&!i.w.includes("Ñ")).slice(0,6);
+  const sgen=gen.filter(i=>!used.has(i.w)&&!i.w.includes("Ñ")&&i.w.length<=13).slice(0,8);
+  const sitems=shuffle([...stal,...sgen],r);
+  let sp=null;for(let k=0;k<5&&!sp;k++)sp=buildSopa(sitems,15,seed^(k*2654435761));
+  return {seed,cw,sp,sitems};
+}
+
+/* ============ texto de pistas en canvas (no se puede copiar) ============ */
+function drawText(cv,text,opt={}){
+  const W=Math.max(120,cv.clientWidth||cv.parentElement.clientWidth||300);
+  const dpr=window.devicePixelRatio||1,fs=opt.size||16,lh=Math.round(fs*1.38);
+  const ctx=cv.getContext("2d");
+  ctx.font=`${opt.weight||700} ${fs}px Nunito, sans-serif`;
+  const words=String(text).split(" "),lines=[];let cur="";
+  for(const w of words){const t=cur?cur+" "+w:w;if(ctx.measureText(t).width>W-4&&cur){lines.push(cur);cur=w}else cur=t}
+  if(cur)lines.push(cur);
+  const H=lines.length*lh+6;
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.height=H+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  ctx.font=`${opt.weight||700} ${fs}px Nunito, sans-serif`;ctx.textBaseline="alphabetic";
+  const rr=rng(hash(text));
+  // ruido suave
+  ctx.globalAlpha=.10;ctx.strokeStyle=opt.color||"#16213a";
+  for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(0,rr()*H);ctx.bezierCurveTo(W*.3,rr()*H,W*.7,rr()*H,W,rr()*H);ctx.stroke()}
+  ctx.globalAlpha=1;ctx.fillStyle=opt.color||"#16213a";
+  lines.forEach((ln,li)=>{let x=2;for(const ch of ln){const y=(li+1)*lh-5+(rr()-.5)*1.6;ctx.fillText(ch,x,y);x+=ctx.measureText(ch).width}});
+}
+
+/* ============ estado ============ */
+let S=null,CH=null,KEY=null,tickT=null;
+const save=()=>{if(KEY&&S)ls.set(KEY,S)};
+const now=()=>Date.now();
+
+function startSession(name,curso,grupo,clave){
+  CH=makeChallenge(name,curso,clave);
+  KEY="ret-invdig-"+CH.seed;
+  S=ls.get(KEY);
+  if(!S||S.v!==1){
+    S={v:1,name:name.trim(),curso:curso.trim(),grupo:grupo.trim(),clave:clave.trim(),seed:CH.seed,
+      started:now(),active:0,exits:0,away:0,blocked:0,shots:0,checks:0,fails:0,
+      cw:{},sp:{found:[]},tab:"cw",finished:false,finishedAt:0};
+  }
+  ls.set("ret-invdig-last",{name:S.name,curso:S.curso,grupo:S.grupo,clave:S.clave});
+  save();
+  lastTick=now();
+  if(!S.finished){clearInterval(tickT);tickT=setInterval(tick,1000)}
+  armGuards();
+  render();
+}
+
+/* ============ vigilancia: salidas de la pestaña, copiar, capturas ============ */
+let awayAt=0,lastTick=now(),guardsOn=false;
+function tick(){
+  const t=now();
+  if(S&&!S.finished&&!awayAt&&document.visibilityState==="visible"){S.active+=Math.min(5000,t-lastTick)}
+  lastTick=t;renderStats();save();
+}
+function goAway(){
+  if(!S||S.finished||awayAt||$("#app .inicio"))return;
+  awayAt=now();S.exits++;save();document.body.classList.add("away");renderStats();
+}
+function comeBack(){
+  if(!awayAt)return;
+  const d=now()-awayAt;awayAt=0;S.away+=d;lastTick=now();save();renderStats();
+  showModal(`<div class="card"><div class="big">${S.exits}</div><h2>Saliste de la actividad</h2>
+   <p>Estuviste fuera ${fmtT(d/1000)} minutos. Cada salida queda en tu código de entrega y el profe la ve.</p>
+   <p class="note">Resuélvelo con lo que aprendiste en el taller, no con otras páginas ni con IA.</p>
+   <button class="btn" id="mOk">Volver al reto</button></div>`,()=>{$("#mOk").onclick=()=>{hideModal();document.body.classList.remove("away")}});
+}
+function armGuards(){
+  if(guardsOn)return;guardsOn=true;
+  document.addEventListener("visibilitychange",()=>{document.visibilityState==="hidden"?goAway():comeBack()});
+  window.addEventListener("blur",()=>goAway());
+  window.addEventListener("focus",()=>comeBack());
+  ["copy","cut","paste","contextmenu","dragstart","selectstart"].forEach(ev=>document.addEventListener(ev,e=>{
+    const t=e.target;if(t&&t.closest&&t.closest(".allow"))return;
+    if(ev==="selectstart"&&t&&t.tagName==="INPUT")return;
+    e.preventDefault();if(S&&!S.finished&&(ev==="copy"||ev==="cut"||ev==="paste")){S.blocked++;save();renderStats()}
+  }));
+  document.addEventListener("keydown",e=>{
+    const k=(e.key||"").toLowerCase();
+    if(k==="printscreen"||(e.metaKey&&e.shiftKey&&["3","4","5","s"].includes(k))||(e.ctrlKey&&k==="p")){if(S&&!S.finished){S.shots++;save();renderStats()}if(k!=="printscreen")e.preventDefault()}
+  });
+  document.addEventListener("keyup",e=>{if((e.key||"").toLowerCase()==="printscreen"&&S&&!S.finished){S.shots++;save();renderStats()}});
+}
+
+/* ============ barra ============ */
+function cwStats(){
+  const P=CH.cw.placed;let good=0;
+  P.forEach(p=>{if(wordCells(p).every(([r,c])=>eqL(S.cw[r+","+c],CH.cw.cells[r+","+c].ch)))good++});
+  return {good,total:P.length};
+}
+function renderStats(){
+  if(!S){$("#stats").innerHTML="";$("#who").textContent="";return}
+  $("#who").textContent=S.name+" · "+S.curso+(S.grupo?" · Grupo "+S.grupo:"");
+  const ex=S.exits;
+  $("#stats").innerHTML=`<span class="pill">⏱ ${fmtT(S.active/1000)}</span>
+   <span class="pill ${ex>=3?"bad":ex>0?"warn":""}" title="Veces que saliste de la actividad">↗ Salidas: ${ex}</span>
+   ${S.blocked+S.shots?`<span class="pill warn">⚠ Copias/capturas: ${S.blocked+S.shots}</span>`:""}
+   ${S.finished?`<span class="pill" style="background:var(--green)">✔ Entregado</span>`:""}`;
+}
+
+/* ============ modal ============ */
+function showModal(html,bind){$("#modal").innerHTML=`<div class="modal">${html}</div>`;bind&&bind()}
+function hideModal(){$("#modal").innerHTML=""}
+
+/* ============ vistas ============ */
+function render(){
+  renderStats();document.documentElement.style.setProperty('--hdr',$('.top').offsetHeight+'px');
+  const app=$("#app");
+  if(location.hash==="#docente"){renderTeacher(app);return}
+  if(!S){renderStart(app);return}
+  if(S.finished){renderDone(app);return}
+  app.innerHTML=`<div class="tabs">
+    <button class="tab" data-t="cw" aria-selected="${S.tab==="cw"}">Crucigrama <span class="c" id="cCw"></span></button>
+    <button class="tab" data-t="sp" aria-selected="${S.tab==="sp"}">Sopa de letras <span class="c" id="cSp"></span></button>
+    <button class="tab finish" id="bFin">Terminar y entregar</button></div>
+    <div id="pane"></div>`;
+  $$(".tab[data-t]",app).forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;save();render()});
+  $("#bFin").onclick=confirmFinish;
+  S.tab==="cw"?renderCW($("#pane")):renderSP($("#pane"));
+  updCounts();
+}
+function updCounts(){
+  const a=cwStats();const c1=$("#cCw"),c2=$("#cSp");
+  if(c1)c1.textContent=a.good+"/"+a.total;
+  if(c2)c2.textContent=S.sp.found.length+"/"+CH.sitems.length;
+}
+
+/* ---------- inicio ---------- */
+function renderStart(app){
+  const last=ls.get("ret-invdig-last")||{};
+  app.innerHTML=`<div class="inicio hero">
+   <div class="card intro">
+     <div class="kicker">Tecnología e Informática · Grado 6.°</div>
+     <h1>Reto Investigación Digital</h1>
+     <p>Un crucigrama y una sopa de letras de nivel difícil sobre los nueve temas del taller <b>Mi Primera Investigación Digital</b>.</p>
+     <ul class="rules">
+       <li><span class="ic">1</span><span>Tu reto es <b>único</b>: las palabras y su ubicación cambian según tu nombre. Copiarle a un compañero no sirve.</span></li>
+       <li><span class="ic">2</span><span>Muchas pistas hablan de <b>las imágenes y ejemplos del taller</b>. Ninguna IA las conoce: solo las sabes si hiciste el taller.</span></li>
+       <li><span class="ic">3</span><span>Las pistas no se pueden copiar. Si sales de esta pantalla, la actividad se pone borrosa y la salida <b>queda registrada</b>.</span></li>
+       <li><span class="ic">4</span><span>Al terminar recibes un <b>código de entrega</b> con tu resultado, tu tiempo y tus salidas. Ese código es lo que entregas.</span></li>
+     </ul>
+   </div>
+   <form class="card" id="fStart" autocomplete="off">
+     <h2>¿Quién resuelve el reto?</h2>
+     <label class="f" for="iName">Nombre y apellido completos</label>
+     <input class="in" id="iName" maxlength="60" value="${esc(last.name||"")}" placeholder="Ej.: Ana María López">
+     <div class="row2">
+       <div><label class="f" for="iCur">Curso</label><input class="in" id="iCur" maxlength="12" value="${esc(last.curso||"")}" placeholder="Ej.: 6-2"></div>
+       <div><label class="f" for="iGr">Grupo / blog N.° <small>(opcional)</small></label><input class="in" id="iGr" maxlength="6" value="${esc(last.grupo||"")}" placeholder="Ej.: 3"></div>
+     </div>
+     <label class="f" for="iKey">Clave de la clase <small>(si el profe la dio)</small></label>
+     <input class="in" id="iKey" maxlength="20" value="${esc(last.clave||"")}" placeholder="La escribe el profe en el tablero">
+     <div class="err" id="sErr"></div>
+     <button class="btn" type="submit" style="width:100%;margin-top:4px">Empezar el reto →</button>
+     <p class="note">Si cierras la página, al volver con el mismo nombre, curso y clave sigues donde ibas (en este mismo dispositivo). Tu tiempo y tus salidas no se borran.</p>
+   </form></div>`;
+  $("#fStart").onsubmit=e=>{
+    e.preventDefault();
+    const n=$("#iName").value,c=$("#iCur").value,g=$("#iGr").value,k=$("#iKey").value;
+    if(n.trim().split(/\s+/).filter(x=>x.length>1).length<2){$("#sErr").textContent="Escribe tu nombre y tu apellido.";return}
+    if(!c.trim()){$("#sErr").textContent="Escribe tu curso.";return}
+    $("#sErr").textContent="Preparando tu reto…";
+    setTimeout(()=>startSession(n.replace(/\s+/g," "),c,g,k),20);
+  };
+}
+
+/* ---------- crucigrama ---------- */
+let cur={pi:0,cell:null};
+const eqL=(a,b)=>{if(!a)return false;a=a.toUpperCase();if(a===b)return true;return b==="Ñ"&&a==="N"};
+function wordCells(p){return Array.from({length:p.w.length},(_,i)=>p.d==="h"?[p.r,p.c+i]:[p.r+i,p.c])}
+function renderCW(pane){
+  const cw=CH.cw;
+  const avail=Math.min(pane.clientWidth||window.innerWidth,1100);
+  const gridW=window.innerWidth>900?avail-360:avail-16;
+  const cs=Math.max(22,Math.min(40,Math.floor((gridW-12)/cw.C)));
+  pane.innerHTML=`<div class="cwlay">
+    <div>
+      <div class="cluebox"><div class="lab"><span id="clN"></span><span id="clL"></span></div><canvas id="clCv"></canvas></div>
+      <div class="gridwrap"><div class="cw" id="cwG" style="--cs:${cs}px;grid-template-columns:repeat(${cw.C},var(--cs))"></div></div>
+    </div>
+    <div class="side card">
+      <h3>Palabras <span class="hintline" id="cwPct"></span></h3>
+      <div class="meter"><i id="cwBar"></i></div>
+      <p class="hintline">Toca un número o una casilla para ver su pista. Toca dos veces la misma casilla para cambiar entre horizontal y vertical.</p>
+      <h3 style="margin-top:12px">Horizontales →</h3><div class="chips" id="chH"></div>
+      <h3>Verticales ↓</h3><div class="chips" id="chV"></div>
+      <button class="btn blue" id="bChk" style="width:100%">Revisar mis letras (${Math.max(0,3-S.checks)} de 3)</button>
+      <div class="feedback" id="cwFb"></div>
+      <p class="hintline">Revisar marca en rojo las letras equivocadas. Solo tienes 3 revisiones y cada una queda registrada.</p>
+    </div></div>`;
+  const G=$("#cwG");let html="";
+  const nums={};cw.placed.forEach(p=>nums[p.r+","+p.c]=p.n);
+  for(let r=0;r<cw.R;r++)for(let c=0;c<cw.C;c++){
+    const k=r+","+c;
+    if(cw.cells[k])html+=`<div class="cell w" data-k="${k}">${nums[k]?`<span class="n">${nums[k]}</span>`:""}<input maxlength="2" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" data-r="${r}" data-c="${c}" value="${esc(S.cw[k]||"")}" aria-label="casilla"></div>`;
+    else html+=`<div class="cell"></div>`;
+  }
+  G.innerHTML=html;
+  $("#chH").innerHTML=cw.placed.map((p,i)=>p.d==="h"?`<button class="chip" data-pi="${i}">${p.n}</button>`:"").join("");
+  $("#chV").innerHTML=cw.placed.map((p,i)=>p.d==="v"?`<button class="chip" data-pi="${i}">${p.n}</button>`:"").join("");
+  $$(".chip",pane).forEach(b=>b.onclick=()=>{const p=cw.placed[+b.dataset.pi];selectWord(+b.dataset.pi,p.r+","+p.c,true)});
+  $$("input",G).forEach(inp=>{
+    inp.addEventListener("pointerdown",e=>{
+      const k=inp.parentElement.dataset.k,ws=cw.cells[k].words;
+      if(cur.cell===k&&ws.length>1){e.preventDefault();selectWord(ws.find(w=>w!==cur.pi),k,true);return}
+      const keep=ws.includes(cur.pi)?cur.pi:ws[0];
+      e.preventDefault();selectWord(keep,k,true);
+    });
+    inp.addEventListener("input",()=>{
+      const raw=[...inp.value].pop()||"";
+      let v=/ñ/i.test(raw)?"Ñ":norm(raw).toUpperCase().replace(/[^A-Z]/g,"");
+      inp.value=v;
+      const k=inp.parentElement.dataset.k;S.cw[k]=v;inp.parentElement.classList.remove("bad");save();
+      if(v)move(1);refreshCW();
+    });
+    inp.addEventListener("keydown",e=>{
+      const k=inp.parentElement.dataset.k;
+      if(e.key==="Backspace"&&!inp.value){e.preventDefault();move(-1,true)}
+      else if(e.key==="ArrowRight"||e.key==="ArrowLeft"||e.key==="ArrowUp"||e.key==="ArrowDown"){
+        e.preventDefault();const [r,c]=k.split(",").map(Number);
+        const d={ArrowRight:[0,1],ArrowLeft:[0,-1],ArrowUp:[-1,0],ArrowDown:[1,0]}[e.key];
+        const nk=(r+d[0])+","+(c+d[1]);
+        if(cw.cells[nk]){const want=d[0]===0?"h":"v";const ws=cw.cells[nk].words;const pi=ws.find(w=>cw.placed[w].d===want);selectWord(pi!=null?pi:ws[0],nk,true)}
+      }else if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();selectWord((cur.pi+1)%cw.placed.length,null,true)}
+    });
+  });
+  $("#bChk").onclick=doCheck;
+  const p0=cw.placed[Math.min(cur.pi,cw.placed.length-1)]||cw.placed[0];
+  selectWord(cw.placed.indexOf(p0),cur.cell&&cw.cells[cur.cell]?cur.cell:null,false);
+  refreshCW();
+}
+function selectWord(pi,cellK,focus){
+  const cw=CH.cw,p=cw.placed[pi];cur.pi=pi;
+  const cells=wordCells(p).map(([r,c])=>r+","+c);
+  if(!cellK||!cells.includes(cellK)){cellK=cells.find(k=>!S.cw[k])||cells[0]}
+  cur.cell=cellK;
+  $$(".cell.w").forEach(el=>{el.classList.toggle("inw",cells.includes(el.dataset.k));el.classList.toggle("cur",el.dataset.k===cellK)});
+  $$(".chip").forEach(b=>b.classList.toggle("on",+b.dataset.pi===pi));
+  $("#clN").textContent=p.n+(p.d==="h"?" → horizontal":" ↓ vertical");
+  $("#clL").textContent=p.w.length+" letras";
+  drawText($("#clCv"),p.q,{color:"#ffffff",size:17});
+  if(focus){const inp=$(`.cell.w[data-k="${cellK}"] input`);if(inp)inp.focus({preventScroll:true})}
+}
+function move(step,erase){
+  const cw=CH.cw,p=cw.placed[cur.pi];
+  const cells=wordCells(p).map(([r,c])=>r+","+c);let i=cells.indexOf(cur.cell)+step;
+  if(i<0||i>=cells.length)return;
+  const k=cells[i];
+  if(erase){S.cw[k]="";const inp=$(`.cell.w[data-k="${k}"] input`);if(inp)inp.value="";save();refreshCW()}
+  selectWord(cur.pi,k,true);
+}
+function refreshCW(){
+  const cw=CH.cw,st=cwStats();
+  cw.placed.forEach((p,i)=>{const b=$(`.chip[data-pi="${i}"]`);if(b)b.classList.toggle("full",wordCells(p).every(([r,c])=>S.cw[r+","+c]))});
+  const filled=Object.keys(cw.cells).filter(k=>S.cw[k]).length,tot=Object.keys(cw.cells).length;
+  $("#cwBar").style.width=Math.round(100*filled/tot)+"%";
+  $("#cwPct").textContent=filled+"/"+tot+" casillas";
+  updCounts();
+}
+function doCheck(){
+  const fb=$("#cwFb");
+  if(S.checks>=3){fb.className="feedback bad";fb.textContent="Ya usaste tus 3 revisiones.";return}
+  S.checks++;save();
+  let wrong=0,empty=0;
+  for(const k in CH.cw.cells){const el=$(`.cell.w[data-k="${k}"]`);el.classList.remove("bad","ok");
+    if(!S.cw[k]){empty++;continue}
+    if(!eqL(S.cw[k],CH.cw.cells[k].ch)){wrong++;el.classList.add("bad")}}
+  const st=cwStats();
+  $("#bChk").textContent=`Revisar mis letras (${Math.max(0,3-S.checks)} de 3)`;
+  CH.cw.placed.forEach((p,i)=>{const b=$(`.chip[data-pi="${i}"]`);if(b)b.classList.toggle("good",wordCells(p).every(([r,c])=>eqL(S.cw[r+","+c],CH.cw.cells[r+","+c].ch)))});
+  fb.className="feedback "+(wrong?"bad":"ok");
+  fb.textContent=`${st.good} de ${st.total} palabras correctas · ${wrong} letras equivocadas · ${empty} casillas vacías`;
+  renderStats();
+}
+
+/* ---------- sopa ---------- */
+let pend=null,drag=null;
+const COLORS=["#e6194b","#3cb44b","#4363d8","#f58231","#911eb4","#008080","#9a6324","#c2185b"];
+function renderSP(pane){
+  const sp=CH.sp,N=sp.N;
+  const avail=Math.min(pane.clientWidth||window.innerWidth,1100);
+  const w=window.innerWidth>900?Math.min(560,avail-440):avail-20;
+  const ss=Math.max(20,Math.min(36,Math.floor((w-14)/N)));
+  pane.innerHTML=`<div class="splay">
+    <div><div class="spbox" id="spBox"><div class="sp" id="spG" style="--ss:${ss}px;grid-template-columns:repeat(${N},var(--ss))"></div><svg class="spsvg" id="spSvg"></svg></div>
+      <div class="feedback" id="spFb" style="text-align:center"></div>
+      <p class="hintline" style="text-align:center">Arrastra desde la primera hasta la última letra, o toca la primera y luego la última.<br>Las palabras van en 8 direcciones, también al revés. Hay pedazos de palabras que no están completos.</p></div>
+    <div class="card"><h3>No hay lista de palabras: adivina con la pista</h3>
+      <p class="hintline">Encontradas: <b id="spCnt"></b> · Intentos fallidos: <b id="spFail"></b></p>
+      <ul class="sclues" id="spCl"></ul></div></div>`;
+  $("#spG").innerHTML=sp.grid.map((row,r)=>row.map((ch,c)=>`<div data-r="${r}" data-c="${c}">${ch}</div>`).join("")).join("");
+  $("#spCl").innerHTML=CH.sitems.map((it,i)=>`<li data-w="${it.w}"><span class="k">${i+1}</span><canvas></canvas><span class="ans"></span></li>`).join("");
+  requestAnimationFrame(()=>{$$("#spCl li").forEach((li,i)=>{const it=CH.sitems[i];drawText($("canvas",li),it.q+"  ("+it.w.length+" letras)",{size:14.5,weight:700})});paintSP()});
+  const box=$("#spBox");
+  const cellAt=e=>{const t=document.elementFromPoint(e.clientX,e.clientY);const d=t&&t.closest&&t.closest("#spG div");return d?[+d.dataset.r,+d.dataset.c]:null};
+  box.addEventListener("pointerdown",e=>{const c=cellAt(e);if(!c)return;e.preventDefault();
+    if(pend){finishSel(pend,c);pend=null;return}
+    drag={a:c,b:c};previewSel()});
+  box.addEventListener("pointermove",e=>{if(!drag)return;const c=cellAt(e);if(c){drag.b=c;previewSel()}});
+  const up=e=>{if(!drag)return;const c=cellAt(e)||drag.b;const a=drag.a;drag=null;
+    if(c[0]===a[0]&&c[1]===a[1]){pend=a;previewSel();return}
+    finishSel(a,c)};
+  box.addEventListener("pointerup",up);box.addEventListener("pointercancel",()=>{drag=null;previewSel()});
+}
+function lineCells(a,b){const dr=Math.sign(b[0]-a[0]),dc=Math.sign(b[1]-a[1]),lr=Math.abs(b[0]-a[0]),lc=Math.abs(b[1]-a[1]);
+  if(!(lr===0||lc===0||lr===lc))return null;const n=Math.max(lr,lc)+1;return Array.from({length:n},(_,k)=>[a[0]+dr*k,a[1]+dc*k])}
+function previewSel(){
+  $$("#spG div.sel,#spG div.start").forEach(d=>d.classList.remove("sel","start"));
+  if(pend){const d=$(`#spG div[data-r="${pend[0]}"][data-c="${pend[1]}"]`);d&&d.classList.add("start")}
+  if(drag){(lineCells(drag.a,drag.b)||[drag.a]).forEach(([r,c])=>{const d=$(`#spG div[data-r="${r}"][data-c="${c}"]`);d&&d.classList.add("sel")})}
+}
+function finishSel(a,b){
+  const fb=$("#spFb"),l=lineCells(a,b);previewSel();
+  if(!l||l.length<3){fb.className="feedback bad";fb.textContent=l?"Selecciona una palabra completa.":"Solo en línea recta: horizontal, vertical o diagonal.";previewSel();return}
+  const s=l.map(([r,c])=>CH.sp.grid[r][c]).join(""),rv=s.split("").reverse().join("");
+  const w=CH.sitems.map(i=>i.w).find(w=>(w===s||w===rv)&&!S.sp.found.includes(w));
+  if(w){S.sp.found.push(w);save();fb.className="feedback ok";fb.textContent="¡Encontraste "+w+"! Mira a qué pista corresponde.";paintSP();updCounts()}
+  else{S.fails++;save();fb.className="feedback bad";fb.textContent=S.sp.found.includes(s)||S.sp.found.includes(rv)?"Esa ya la encontraste.":"Esa no es una de las palabras escondidas.";$("#spFail").textContent=S.fails}
+}
+function paintSP(){
+  const box=$("#spBox");if(!box)return;const svg=$("#spSvg"),G=$("#spG");
+  const W=G.offsetWidth,H=G.offsetHeight;svg.setAttribute("viewBox",`0 0 ${W} ${H}`);svg.setAttribute("width",W);svg.setAttribute("height",H);
+  const cellC=(r,c)=>{const d=$(`#spG div[data-r="${r}"][data-c="${c}"]`);return [d.offsetLeft+d.offsetWidth/2,d.offsetTop+d.offsetHeight/2,d.offsetWidth]};
+  svg.innerHTML=S.sp.found.map((w,i)=>{const p=CH.sp.pos[w];const [x1,y1,cw]=cellC(p.r,p.c),[x2,y2]=cellC(p.r+p.dr*(w.length-1),p.c+p.dc*(w.length-1));
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${COLORS[i%8]}" stroke-opacity=".32" stroke-width="${cw*.78}" stroke-linecap="round"/>`}).join("");
+  $$("#spCl li").forEach(li=>{const ok=S.sp.found.includes(li.dataset.w);li.classList.toggle("done",ok);$(".ans",li).textContent=ok?li.dataset.w:""});
+  $("#spCnt").textContent=S.sp.found.length+" de "+CH.sitems.length;$("#spFail").textContent=S.fails;
+}
+
+/* ---------- entrega ---------- */
+function confirmFinish(){
+  const a=cwStats();
+  showModal(`<div class="card"><h2>¿Entregar ya?</h2>
+    <p>Crucigrama: <b>${a.good} de ${a.total}</b> palabras correctas.<br>Sopa de letras: <b>${S.sp.found.length} de ${CH.sitems.length}</b> palabras.</p>
+    <p class="note">Después de entregar ya no podrás cambiar tus respuestas.</p>
+    <div style="display:flex;gap:8px;justify-content:center"><button class="btn sec" id="mNo">Seguir resolviendo</button><button class="btn green" id="mYes">Sí, entregar</button></div></div>`,
+   ()=>{$("#mNo").onclick=hideModal;$("#mYes").onclick=()=>{hideModal();S.finished=true;S.finishedAt=now();clearInterval(tickT);save();render()}});
+}
+function integ(ex,away,cp){if(ex===0&&cp===0)return ["g","Sin salidas ni intentos de copiar"];if(ex<=2&&away<120&&cp<=1)return ["y","Pocas salidas: el profe lo revisará"];return ["r","Muchas salidas o intentos de copiar"]}
+function b64e(s){return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function b64d(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";return decodeURIComponent(escape(atob(s)))}
+function makeCode(){
+  const a=cwStats();
+  const f=[S.name,S.curso,S.grupo,S.clave,a.good,a.total,S.sp.found.length,CH.sitems.length,Math.round(S.active/1000),S.exits,Math.round(S.away/1000),S.checks,S.fails,S.blocked+S.shots,Math.round(S.finishedAt/60000).toString(36),S.seed.toString(36)];
+  const p=f.join("|");return "RID-"+b64e(p)+"-"+hash(p+SECRET).toString(36);
+}
+function readCode(code){
+  try{const m=String(code).trim().match(/^RID-([A-Za-z0-9_-]+)-([a-z0-9]+)$/);if(!m)return null;
+    const p=b64d(m[1]);const f=p.split("|");if(f.length!==16)return null;
+    const valid=hash(p+SECRET).toString(36)===m[2];
+    const n=i=>+f[i];
+    return {valid,name:f[0],curso:f[1],grupo:f[2],clave:f[3],cwG:n(4),cwT:n(5),spG:n(6),spT:n(7),secs:n(8),exits:n(9),away:n(10),checks:n(11),fails:n(12),copies:n(13),when:new Date(parseInt(f[14],36)*60000),seed:parseInt(f[15],36),
+      seedOk:makeSeed(f[0],f[1],f[3])===parseInt(f[15],36)};
+  }catch(e){return null}
+}
+const makeSeed=(n,c,k)=>hash(norm(n)+"|"+norm(c)+"|"+norm(k));
+function renderDone(app){
+  const a=cwStats(),code=makeCode(),[ic,it]=integ(S.exits,S.away/1000,S.blocked+S.shots);
+  app.innerHTML=`<div class="card" style="margin-top:18px">
+    <div class="kicker">Reto entregado</div><h1>${esc(S.name)}</h1>
+    <p>${esc(S.curso)}${S.grupo?" · Grupo "+esc(S.grupo):""} · ${new Date(S.finishedAt).toLocaleString("es-CO",{dateStyle:"medium",timeStyle:"short"})}</p>
+    <div class="sumgrid">
+      <div class="sum"><span>Crucigrama</span><b>${a.good}/${a.total}</b></div>
+      <div class="sum"><span>Sopa de letras</span><b>${S.sp.found.length}/${CH.sitems.length}</b></div>
+      <div class="sum"><span>Tiempo</span><b>${fmtT(S.active/1000)}</b></div>
+      <div class="sum"><span>Salidas</span><b>${S.exits}</b></div>
+      <div class="sum"><span>Tiempo fuera</span><b>${fmtT(S.away/1000)}</b></div>
+      <div class="sum"><span>Revisiones</span><b>${S.checks}/3</b></div>
+    </div>
+    <div class="integ ${ic}">${it}</div>
+    <h3 style="margin-top:16px">Tu código de entrega</h3>
+    <p class="hintline">Cópialo completo y pégalo donde diga tu profe (Classroom o el blog del grupo). También puedes tomarle una foto a esta pantalla.</p>
+    <div class="codebox allow" id="code">${code}</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="bCopy">Copiar código</button><span class="feedback" id="cpFb"></span></div>
+  </div>`;
+  $("#bCopy").onclick=async()=>{try{await navigator.clipboard.writeText(code);$("#cpFb").className="feedback ok";$("#cpFb").textContent="¡Copiado!"}catch(e){$("#cpFb").className="feedback bad";$("#cpFb").textContent="No se pudo copiar: mantén presionado el código para seleccionarlo."}};
+}
+
+/* ---------- panel docente (#docente) ---------- */
+let teacherOK=false;
+function renderTeacher(app){
+  $("#stats").innerHTML="";$("#who").textContent="Panel docente";
+  if(!teacherOK){
+    app.innerHTML=`<form class="card" id="fPin" style="max-width:420px;margin:30px auto"><h2>Panel docente</h2><label class="f" for="iPin">Clave del docente</label><input class="in" id="iPin" type="password"><div class="err" id="pErr"></div><button class="btn" style="width:100%">Entrar</button><p class="note"><a href="#" id="toStu">← Volver al reto</a></p></form>`;
+    $("#fPin").onsubmit=e=>{e.preventDefault();if(hash(norm($("#iPin").value)+SECRET)===PIN_HASH){teacherOK=true;renderTeacher(app)}else $("#pErr").textContent="Clave incorrecta."};
+    $("#toStu").onclick=e=>{e.preventDefault();history.replaceState(null,"",location.pathname+location.search);render()};
+    return;
+  }
+  app.innerHTML=`<div class="card" style="margin-top:18px"><div class="kicker">Panel docente</div><h2>Revisar códigos de entrega</h2>
+    <p class="hintline">Pega uno o varios códigos (uno por línea). El panel dice si cada código es auténtico o si fue modificado.</p>
+    <textarea class="in allow" id="tCodes" placeholder="RID-…"></textarea>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="bRead">Revisar códigos</button><button class="btn sec" id="bCsv">Copiar tabla para hoja de cálculo</button><span class="feedback" id="csvFb"></span></div>
+    <div style="overflow:auto" class="allow"><table class="t" id="tRes"></table></div></div>
+   <div class="card doc-sol" style="margin-top:16px"><h2>Solucionario de un estudiante</h2>
+    <p class="hintline">Cada estudiante tiene un reto distinto. Escribe su nombre, curso y clave tal como los escribió.</p>
+    <div class="row2"><div><label class="f">Nombre completo</label><input class="in" id="sN"></div><div><label class="f">Curso</label><input class="in" id="sC"></div></div>
+    <label class="f">Clave de la clase</label><input class="in" id="sK">
+    <button class="btn blue" id="bSol" style="margin-top:10px">Ver solucionario</button><div id="solOut" style="margin-top:12px"></div></div>
+   <p class="note"><a href="#" id="toStu">← Salir del panel</a></p>`;
+  let rows=[];
+  $("#bRead").onclick=()=>{
+    rows=$("#tCodes").value.split(/\s+/).filter(Boolean).map(c=>({c,d:readCode(c)}));
+    $("#tRes").innerHTML=`<tr><th>Estudiante</th><th>Curso</th><th>Gr.</th><th>Crucigrama</th><th>Sopa</th><th>Tiempo</th><th>Salidas</th><th>Fuera</th><th>Copias</th><th>Revis.</th><th>Fecha</th><th>Código</th></tr>`+
+     rows.map(({d})=>{if(!d)return `<tr><td colspan="12"><span class="tag r">Código no válido</span></td></tr>`;
+      const [ic]=integ(d.exits,d.away,d.copies);
+      const ok=d.valid&&d.seedOk;
+      return `<tr><td><b>${esc(d.name)}</b></td><td>${esc(d.curso)}</td><td>${esc(d.grupo)}</td><td>${d.cwG}/${d.cwT}</td><td>${d.spG}/${d.spT}</td><td>${fmtT(d.secs)}</td><td><span class="tag ${ic}">${d.exits}</span></td><td>${fmtT(d.away)}</td><td>${d.copies}</td><td>${d.checks}</td><td>${d.when.toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"})}</td><td><span class="tag ${ok?"g":"r"}">${ok?"Auténtico":"Modificado"}</span></td></tr>`}).join("");
+  };
+  $("#bCsv").onclick=async()=>{
+    const t=["Estudiante\tCurso\tGrupo\tCrucigrama\tTotal crucigrama\tSopa\tTotal sopa\tMinutos\tSalidas\tMinutos fuera\tCopias/capturas\tRevisiones\tFecha\tCódigo"].concat(rows.filter(r=>r.d).map(({d})=>[d.name,d.curso,d.grupo,d.cwG,d.cwT,d.spG,d.spT,(d.secs/60).toFixed(1),d.exits,(d.away/60).toFixed(1),d.copies,d.checks,d.when.toLocaleString("es-CO"),d.valid&&d.seedOk?"Auténtico":"Modificado"].join("\t"))).join("\n");
+    try{await navigator.clipboard.writeText(t);$("#csvFb").className="feedback ok";$("#csvFb").textContent="Tabla copiada: pégala en Sheets o Excel."}catch(e){$("#csvFb").className="feedback bad";$("#csvFb").textContent="No se pudo copiar."}
+  };
+  $("#bSol").onclick=()=>{
+    const ch=makeChallenge($("#sN").value.replace(/\s+/g," "),$("#sC").value,$("#sK").value);
+    const cw=ch.cw;let g="";const nums={};cw.placed.forEach(p=>nums[p.r+","+p.c]=p.n);
+    for(let r=0;r<cw.R;r++)for(let c=0;c<cw.C;c++){const k=r+","+c;g+=cw.cells[k]?`<div class="cell w">${nums[k]?`<span class="n">${nums[k]}</span>`:""}<span style="display:grid;place-items:center;height:100%;font-family:var(--mono);font-weight:700">${cw.cells[k].ch}</span></div>`:`<div class="cell"></div>`}
+    $("#solOut").innerHTML=`<div class="gridwrap"><div class="cw" style="grid-template-columns:repeat(${cw.C},var(--cs))">${g}</div></div>
+      <h3 style="margin-top:12px">Crucigrama</h3><div class="solwords">${cw.placed.map(p=>`<div><b>${p.n}${p.d==="h"?"→":"↓"}</b> ${p.w}${p.t?" ★":""}</div>`).join("")}</div>
+      <h3 style="margin-top:12px">Sopa de letras</h3><div class="solwords">${ch.sitems.map((it,i)=>`<div><b>${i+1}.</b> ${it.w}${it.t?" ★":""}</div>`).join("")}</div>
+      <p class="note">★ = pista que solo se responde con las imágenes y ejemplos del taller.</p>`;
+  };
+  $("#toStu").onclick=e=>{e.preventDefault();history.replaceState(null,"",location.pathname+location.search);render()};
+}
+
+/* ============ arranque ============ */
+window.addEventListener("hashchange",render);
+let rT,lastW=window.innerWidth;window.addEventListener("resize",()=>{clearTimeout(rT);rT=setTimeout(()=>{if(Math.abs(window.innerWidth-lastW)<40)return;lastW=window.innerWidth;if(S&&!S.finished&&location.hash!=="#docente")render()},250)});
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(render);
+render();
+})();
+</script>
+</body>
+</html>
